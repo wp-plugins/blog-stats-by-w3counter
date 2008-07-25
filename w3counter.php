@@ -5,7 +5,7 @@
 Plugin Name:  Blog Stats by W3Counter
 Plugin URI:   http://www.w3counter.com/resources/wordpress-plugin
 Description:  Displays statistics for your blog recorded by W3Counter.
-Version:      1.0.0
+Version:      1.0.1
 Author:       Dan Grossman
 Author URI:   http://www.dangrossman.info
 

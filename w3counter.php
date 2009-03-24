@@ -5,7 +5,7 @@
 Plugin Name:  Blog Stats by W3Counter
 Plugin URI:   http://www.w3counter.com/resources/wordpress-plugin
 Description:  Displays statistics for your blog recorded by W3Counter.
-Version:      1.0.2
+Version:      1.0.4
 Author:       Dan Grossman
 Author URI:   http://www.dangrossman.info
 
@@ -23,22 +23,10 @@ class W3Counter {
 	}
 	
 	function register_widget() {
-	
-		wp_register_sidebar_widget('w3counter', 
-			__('Blog Stats by W3Counter', 'w3counter'), 
-			array(&$this, 'widget'), 
-			array('all_link' => 'http://www.w3counter.com/stats/signin', 'width' => 'full')
-		);
+		wp_add_dashboard_widget('w3counter', 'Blog Stats by W3Counter', array(&$this, 'widget'), array(&$this, 'widget_control'));
+	} 
+
 		
-		wp_register_widget_control('w3counter', 
-			__('Blog Stats by W3Counter', 'w3counter'), 
-			array(&$this, 'widget_control'), 
-			array(), 
-			array('widget_id' => 'w3counter')
-		);
-		
-	}
-	
 	function add_widget($widgets) {
 	
 		global $wp_registered_widgets;
@@ -52,8 +40,10 @@ class W3Counter {
 	
     function widget($args = null) {
     
-    	if (!empty($args))
+    	if (!empty($args) && is_array($args))
         	extract($args, EXTR_SKIP);
+        	
+        $widget_id = 'w3counter';
 
         echo $before_widget;
 
@@ -79,10 +69,11 @@ class W3Counter {
                 <script type="text/javascript">
                 /* <![CDATA[ */
                 jQuery( function($) {
-                        var w3counter = $('#w3counter div.dashboard-widget-content');
+                        var w3counter = $('#w3counter .inside');
                         var h = parseInt( w3counter.parent().height() ) - parseInt( w3counter.prev().height()) - 20;
                         var w = w3counter.width();
-                        w3counter.html('<iframe src="http://www.w3counter.com/stats/wp-dashboard/<?php echo $id; ?>?key=<?php echo $key; ?>&width=' + w.toString() + '" style="width: ' + w.toString() + 'px; height: ' + h.toString() + 'px; border: none; margin: 0; padding: 0" frameborder="0"></iframe>');
+                        w3counter.height(240);
+                        w3counter.html('<iframe src="http://www.w3counter.com/stats/wp-dashboard/<?php echo $id; ?>?key=<?php echo $key; ?>&width=' + w.toString() + '" style="width: ' + w.toString() + 'px; height: 240px; border: none; margin: 0; padding: 0" frameborder="0"></iframe>');
                 } );
                 /* ]]> */
                 </script>
@@ -94,10 +85,11 @@ class W3Counter {
         
     }
 	
-	function widget_control($args) {
+	function widget_control($args = null) {
 	
-		extract($args, EXTR_SKIP);
-		
+		if (!empty($args) && is_array($args))
+			extract($args, EXTR_SKIP);
+					
 		$widget_id = 'w3counter';
 		
 		if (!$widget_options = get_option('dashboard_widget_options'))
@@ -121,9 +113,10 @@ class W3Counter {
 		
 	}
 	
-	function widget_sidebar($args) {
+	function widget_sidebar($args = null) {
 	
-	        extract($args, EXTR_SKIP);
+			if (!empty($args) && is_array($args))
+	        	extract($args, EXTR_SKIP);
 	
 	        $widget_id = 'w3counter';
 	
@@ -166,7 +159,7 @@ w3counter(<?php echo $widget_options[$widget_id]['id']; ?>);
 	
     function widget_sidebar_control($args = null) {
     
-    		if (!empty($args))
+    		if (!empty($args) && is_array($args))
             	extract($args, EXTR_SKIP);
 
             $widget_id = 'w3counter';

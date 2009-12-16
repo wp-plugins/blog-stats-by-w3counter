@@ -4,135 +4,157 @@
 
 Plugin Name:  Blog Stats by W3Counter
 Plugin URI:   http://www.w3counter.com/resources/wordpress-plugin
-Description:  Displays statistics for your blog recorded by W3Counter.
-Version:      1.0.4
+Description:  Display stats for your blog on the dashboard and add the tracking code to your site with a widget
+Version:      2.0
 Author:       Dan Grossman
 Author URI:   http://www.dangrossman.info
 
 **************************************************************************/
 
-class W3Counter {
+function w3counter_init() {
+        add_action('admin_menu', 'w3counter_config_page');
+        add_action('admin_menu', 'w3counter_stats_page');
+}
+add_action('init', 'w3counter_init');
 
-	function W3Counter() {
+function w3counter_admin_init() {
+        if ( function_exists( 'get_plugin_page_hook' ) )
+                $hook = get_plugin_page_hook( 'w3counter-stats-display', 'index.php' );
+        else
+                $hook = 'dashboard_page_w3counter-stats-display';
+        add_action('admin_head-'.$hook, 'w3counter_stats_script');
+}
+add_action('admin_init', 'w3counter_admin_init');
+
+function w3counter_config_page() {
+        if ( function_exists('add_submenu_page') )
+                add_submenu_page('options-general.php', __('W3Counter'), __('W3Counter'), 'manage_options', 'w3counter-config', 'w3counter_conf');
+
+}
+
+function w3counter_stats_page() {
+        if ( function_exists('add_submenu_page') )
+                add_submenu_page('index.php', __('W3Counter Stats'), __('W3Counter Stats'), 'manage_options', 'w3counter-stats-display', 'w3counter_stats_display');
+
+}
+
+function w3counter_stats_script() {
+        ?>
+	<script type="text/javascript">
+	function resizew3Iframe() {
+	    var height = document.documentElement.clientHeight;
+	    height -= document.getElementById('w3counter-stats-frame').offsetTop;
+	    height += 100; // magic padding
 	
-		add_action('wp_dashboard_setup', array(&$this, 'register_widget'));
-		add_filter('wp_dashboard_widgets', array(&$this, 'add_widget'));
-        register_sidebar_widget(array('W3Counter Tracker', 'widgets'), array(&$this, 'widget_sidebar'));
-        register_widget_control(array('W3Counter Tracker', 'widgets'), array(&$this, 'widget_sidebar_control'));
-        
+	    document.getElementById('w3counter-stats-frame').style.height = height +"px";
+	
+	};
+	function resizew3IframeInit() {
+	        document.getElementById('w3counter-stats-frame').onload = resizew3Iframe;
+	        window.onresize = resizew3Iframe;
 	}
-	
-	function register_widget() {
-		wp_add_dashboard_widget('w3counter', 'Blog Stats by W3Counter', array(&$this, 'widget'), array(&$this, 'widget_control'));
-	} 
+	addLoadEvent(resizew3IframeInit);
+	</script><?php
+}
 
-		
-	function add_widget($widgets) {
+
+function w3counter_stats_display() {
 	
-		global $wp_registered_widgets;
+	$w3counter_id = get_option('w3counter_id');
+	$w3counter_user = get_option('w3counter_user');
+	$w3counter_pass = get_option('w3counter_pass');
+
+	if (empty($w3counter_user)) {
+
+		echo "<div class='wrap'><p>You must configure the plugin first. Click W3Counter under the Settings menu.</p></div>";
 		
-		if (!isset($wp_registered_widgets['w3counter']) ) return $widgets;
-		array_splice($widgets, 0, 0, 'w3counter');
-		
-		return $widgets;
-		
+	} else {
+
+		$url = 'http://www.w3counter.com/stats/' . $w3counter_id . '?wordpress=1&username=' . $w3counter_user . '&password=' . $w3counter_pass;
+	
+        	?>
+       		<div class="wrap">
+        	<iframe src="<?php echo $url; ?>" width="100%" height="100%" frameborder="0" id="w3counter-stats-frame"></iframe>
+        	</div>
+        	<?php
+
 	}
+}
+
+function w3counter_conf() {
+
+	if (isset($_POST['w3counter_id'])) {
+		update_option('w3counter_id', $_POST['w3counter_id']);
+		update_option('w3counter_user', $_POST['w3counter_user']);
+		update_option('w3counter_pass', $_POST['w3counter_pass']);
+	}
+	$w3counter_id = get_option('w3counter_id');
+	$w3counter_user = get_option('w3counter_user');
+	$w3counter_pass = get_option('w3counter_pass');
+?>
+
+<div class="wrap">
+        <div id="icon-options-general" class="icon32"><br /></div>
+
+        <h2>W3Counter Configuration</h2>
+
+        <form method="post" action="">
+
+		<?php if (isset($_POST['w3counter_id'])) echo 'Changes saved.<br />'; ?>
 	
-    function widget($args = null) {
-    
-    	if (!empty($args) && is_array($args))
-        	extract($args, EXTR_SKIP);
-        	
-        $widget_id = 'w3counter';
+                <table class="form-table">
+                        <tr valign="top">
+				<th scope="row"><label>Your Website ID:</label></th>
+				<td>
+					<input type="text" name="w3counter_id" value="<?php echo $w3counter_id; ?>" />
+				</td>
+			</tr>
+			<tr>
+				<th></th>
+				<td>
+					Your website ID is the number you see in the address bar when viewing your web stats at <a href="http://www.w3counter.com/stats/" target="_blank">W3Counter.com</a>. 
+					The image below shows where you can find it. Enter the number for the website associated with this blog.<br /><br />
+					<img src="http://www.w3counter.com/stats/images/plugin.png" />
+				</td>
+			</tr>
+                        <tr valign="top">
+                                <th scope="row"><label>Your W3Counter Username:</label></th>
+                                <td>
+                                        <input type="text" name="w3counter_user" value="<?php echo $w3counter_user; ?>" />
+                                </td>
+                        </tr>
+			<tr>
+				<th scope="row"><label>Your W3Counter Password:</label></th>
+				<td>
+					<input type="password" name="w3counter_pass" value="<?php echo $w3counter_pass; ?>" />
+                                </td>
+                        </tr>
+		</table>
 
-        echo $before_widget;
+		<br /><br />
+		<input type="submit" value="Save Changes" class="button" />
 
-        echo $before_title;
-        echo $widget_name;
-        echo $after_title;
+	</form>
+</div>
 
-        if (!$widget_options = get_option('dashboard_widget_options' ))
-                $widget_options = array();
+<?php 
+}
 
-        if (!isset($widget_options[$widget_id]))
-                $widget_options[$widget_id] = array();
+class WP_Widget_W3Counter extends WP_Widget {
 
-        if (!isset($widget_options[$widget_id]['id'])) {
-                echo "<b>Blog Stats by W3Counter</b> has not yet been configured. Click the edit link above.";
-        } else {
-        
-        		$id = $widget_options[$widget_id]['id'];
-    			$key = md5($widget_options[$widget_id]['password']);
-    			    		
-                ?>
-
-                <script type="text/javascript">
-                /* <![CDATA[ */
-                jQuery( function($) {
-                        var w3counter = $('#w3counter .inside');
-                        var h = parseInt( w3counter.parent().height() ) - parseInt( w3counter.prev().height()) - 20;
-                        var w = w3counter.width();
-                        w3counter.height(240);
-                        w3counter.html('<iframe src="http://www.w3counter.com/stats/wp-dashboard/<?php echo $id; ?>?key=<?php echo $key; ?>&width=' + w.toString() + '" style="width: ' + w.toString() + 'px; height: 240px; border: none; margin: 0; padding: 0" frameborder="0"></iframe>');
-                } );
-                /* ]]> */
-                </script>
-
-                <?php
+        function WP_Widget_W3Counter() {
+		$widget_ops = array('classname' => 'WP_Widget_W3Counter', 'description' => __( 'Adds the W3Counter tracking code to your sidebar') );
+                $this->WP_Widget('w3counter', __('W3Counter'), $widget_ops);
         }
 
-        echo $after_widget;
-        
-    }
-	
-	function widget_control($args = null) {
-	
-		if (!empty($args) && is_array($args))
-			extract($args, EXTR_SKIP);
-					
-		$widget_id = 'w3counter';
+        function widget( $args, $instance ) {
+                extract($args);
 		
-		if (!$widget_options = get_option('dashboard_widget_options'))
-			$widget_options = array();
+		$w3counter_id = get_option('w3counter_id');
 
-		if (!isset($widget_options[$widget_id]))
-			$widget_options[$widget_id] = array();
-
-		if ('POST' == $_SERVER['REQUEST_METHOD'] && isset($_POST['widget-w3counter'])) {
-			$widget_options[$widget_id] = stripslashes_deep($_POST['widget-w3counter']);												
-			update_option('dashboard_widget_options', $widget_options);
-		}
-		
-		echo "<p><label for='w3counter-id'>";
-		_e('What is your W3Counter website ID?', 'w3counter');
-		echo "</label><br /><input type='text' name='widget-w3counter[id]' size='4' value='" . $widget_options[$widget_id]['id'] . "'></p>";
-		
-		echo "<p><label for='w3counter-password'>If you did not enable public stats when adding your website, then what is your W3Counter password?</label>";
-		echo "<br /><input type='password' name='widget-w3counter[password]' size='10' value='" . $widget_options[$widget_id]['password'] . "'></p>";
-		
-		
-	}
-	
-	function widget_sidebar($args = null) {
-	
-			if (!empty($args) && is_array($args))
-	        	extract($args, EXTR_SKIP);
-	
-	        $widget_id = 'w3counter';
-	
-	        if (!$widget_options = get_option('dashboard_widget_options'))
-	                $widget_options = array();
-	
-	        if (!isset($widget_options[$widget_id]))
-	                $widget_options[$widget_id] = array();
-	
-	        if ($widget_options[$widget_id]['align'] == 'center') {
-	                echo "<div style='text-align: center; margin: 0; padding: 0'>";
-	        }
-	
-	        echo $before_widget;
-	
-	        ?>
+                echo $before_widget;
+                echo '<div id="w3counter_wrap">';
+?>
 <!-- Begin W3Counter Tracking Code -->
 <script type="text/javascript" src="http://www.w3counter.com/tracker.js"></script>
 <script type="text/javascript">
@@ -141,64 +163,29 @@ if (!empty($_COOKIE['comment_author_' . COOKIEHASH])) {
         echo "_w3counter_label = '" . $_COOKIE['comment_author_' . COOKIEHASH] . "';\n";
 }
 ?>
-w3counter(<?php echo $widget_options[$widget_id]['id']; ?>);
+w3counter(<?php echo $w3counter_id; ?>);
 </script>
 <noscript>
-<div><a href="http://www.w3counter.com"><img src="http://www.w3counter.com/tracker.php?id=<?php echo $widget_options[$widget_id]['id']; ?>" style="border: 0" alt="W3Counter Web Stats" /></a></div>
+<div><a href="http://www.w3counter.com"><img src="http://www.w3counter.com/tracker.php?id=<?php echo $w3counter_id; ?>" style="border: 0" alt="W3Counter" /></a></div>
 </noscript>
 <!-- End W3Counter Tracking Code-->
-	        <?php
-	
-	        if ($widget_options[$widget_id]['align'] == 'center') {
-	                echo "</div>";
-	        }
-	
-	        echo $after_widget;
-	
+<?php
+                echo '</div>';
+                echo $after_widget;
+        }
+
+        function update( $new_instance, $old_instance ) {
+                $instance = $old_instance;
+                return $instance;
+        }
+
+        function form( $instance ) {
 	}
-	
-    function widget_sidebar_control($args = null) {
-    
-    		if (!empty($args) && is_array($args))
-            	extract($args, EXTR_SKIP);
-
-            $widget_id = 'w3counter';
-
-            if (!$widget_options = get_option('dashboard_widget_options'))
-                    $widget_options = array();
-
-            if (!isset($widget_options[$widget_id])) {
-                    $widget_options[$widget_id] = array();
-                    $widget_options[$widget_id]['align'] = 'left';
-            }
-
-            if ('POST' == $_SERVER['REQUEST_METHOD'] && isset($_POST['widget-w3counter'])) {
-                    if (!isset($_POST['widget-w3counter']['align'])) {
-                            $_POST['widget-w3counter']['align'] = 'left';
-                    } else {
-                            $_POST['widget-w3counter']['align'] = 'center';
-                    }
-                    $widget_options[$widget_id] = stripslashes_deep($_POST['widget-w3counter']);
-                    update_option('dashboard_widget_options', $widget_options);
-            }
-
-            echo "<p><label for='w3counter-id'>";
-            _e('What is your W3Counter website ID?', 'w3counter');
-            echo "</label><br /><input type='text' name='widget-w3counter[id]' size='4' value='" . $widget_options[$widget_id]['id'] . "'></p>";
-
-            echo "<p><label for='w3counter-align'>";
-            _e('Center the tracking image?', 'w3counter');
-            echo "</label><br /><input type='checkbox' name='widget-w3counter[align]' ";
-            if ($widget_options[$widget_id]['align'] == 'center')
-                    echo "checked='checked'";
-            echo "/> Yes</p>";
-            
-    }
-
-	
 }
 
-add_action('plugins_loaded', create_function('', 'global $w3counter; if (empty($w3counter)) $w3counter = new W3Counter();'));
-add_action('widgets_init', create_function('', 'global $w3counter; if (empty($w3counter)) $w3counter = new W3Counter();'));
+add_action('widgets_init', 'w3counter_widget_init');
+function w3counter_widget_init() {
+	register_widget('WP_Widget_W3Counter');
+}
 
 ?>

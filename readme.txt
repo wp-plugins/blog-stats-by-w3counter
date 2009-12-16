@@ -9,7 +9,7 @@ Adds real-time blog stats to your dashboard including visitor activity, top post
 
 == Description ==
 
-Adds your W3Counter free web stats to your WordPress dashboard, and adds a widget
+Adds W3Counter's free web stats to your WordPress dashboard, and adds a widget
 for automatically adding the tracking code to your sidebar.
 
 Requires a free web stats account from <a href="http://www.w3counter.com">W3Counter.com</a>.

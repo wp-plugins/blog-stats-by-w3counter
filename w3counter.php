@@ -5,7 +5,7 @@
 Plugin Name:  Blog Stats by W3Counter
 Plugin URI:   http://www.w3counter.com/resources/wordpress-plugin
 Description:  Display stats for your blog on the dashboard and add the tracking code to your site with a widget
-Version:      2.0
+Version:      2.1
 Author:       Dan Grossman
 Author URI:   http://www.dangrossman.info
 

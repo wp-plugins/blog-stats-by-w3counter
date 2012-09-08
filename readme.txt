@@ -14,6 +14,8 @@ for automatically adding the tracking code to your sidebar.
 
 Requires a free web stats account from <a href="http://www.w3counter.com">W3Counter.com</a>.
 
+You can ignore any warnings on this page about the plugin possibly being out-of-date; it is current and works with the very latest version of WordPress.
+
 == Installation ==
 
 1. Enter your W3Counter username, password and website ID in the W3Counter page under Settings.

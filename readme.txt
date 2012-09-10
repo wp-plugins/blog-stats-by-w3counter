@@ -2,7 +2,7 @@
 Contributors: dangrossman
 Tags: web stats, web analytics, statistics, stats, analytics, w3counter, tracker, counter
 Requires at least: 2.8
-Tested up to: 3.3.1
+Tested up to: 3.4.2
 Stable tag: trunk
 
 Adds real-time blog stats to your dashboard including visitor activity, top posts, top referrers, searches and locations of your visitors.
@@ -14,11 +14,9 @@ for automatically adding the tracking code to your sidebar.
 
 Requires a free web stats account from <a href="http://www.w3counter.com">W3Counter.com</a>.
 
-You can ignore any warnings on this page about the plugin possibly being out-of-date; it is current and works with the very latest version of WordPress.
-
 == Installation ==
 
-1. Enter your W3Counter username, password and website ID in the W3Counter page under Settings.
+1. Enter your W3Counter username and password in the W3Counter page under Settings.
 
 == Screenshots ==
 

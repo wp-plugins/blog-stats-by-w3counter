@@ -5,7 +5,7 @@
 Plugin Name:  Blog Stats by W3Counter
 Plugin URI:   http://www.w3counter.com/resources/wordpress-plugin
 Description:  Adds real-time blog stats to your dashboard including visitor activity, top posts, top referrers, searches and locations of your visitors. To get started: 1) <a href="http://www.w3counter.com/signup">Sign up for a free W3Counter account</a>, 2) Go to your <a href="admin.php?page=w3counter-config">W3Counter settings</a> page to set your login details, and 3) Add the W3Counter Widget to one of your sidebars or manually copy and paste the code into your theme. <strong>Do you advertise your site online? Then check out our other service: <a href="http://www.improvely.com">Improvely</a></strong>
-Version:      2.6
+Version:      2.7
 Author:       W3Counter
 Author URI:   http://www.w3counter.com
 
@@ -99,7 +99,7 @@ function w3counter_conf() {
 
 	if (empty($w3counter_sites) && empty($w3counter_id) && !empty($w3counter_user)) {
 		$w3counter_sites = array();
-		$list = @file('http://www.w3counter.com/stats/wpinstall?username=' . urlencode($w3counter_user) . '&password=' . urlencode($w3counter_pass));
+		$list = @file('https://www.w3counter.com/stats/wpinstall?username=' . urlencode($w3counter_user) . '&password=' . urlencode($w3counter_pass));
 		if (!empty($list)) {
 			foreach ($list as $line) {
 				$line = trim($line);

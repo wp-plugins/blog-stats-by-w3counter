@@ -5,7 +5,7 @@
 Plugin Name:  Blog Stats by W3Counter
 Plugin URI:   http://www.w3counter.com/resources/wordpress-plugin
 Description:  Adds real-time blog stats to your dashboard including visitor activity, top posts, top referrers, searches and locations of your visitors. To get started: 1) <a href="http://www.w3counter.com/signup">Sign up for a free W3Counter account</a>, 2) Go to your <a href="admin.php?page=w3counter-config">W3Counter settings</a> page to set your login details, and 3) Add the W3Counter Widget to one of your sidebars or manually copy and paste the code into your theme. <strong>Do you advertise your site online? Then check out our other service: <a href="http://www.improvely.com">Improvely</a></strong>
-Version:      2.5
+Version:      2.6
 Author:       W3Counter
 Author URI:   http://www.w3counter.com
 
@@ -31,7 +31,8 @@ function w3counter_admin_init() {
     add_action('admin_head-'.$hook, 'w3counter_stats_script');
 
     $w3counter_user = get_option('w3counter_user');
-    if (empty($w3counter_user))
+	$w3counter_pass = get_option('w3counter_pass');
+    if (empty($w3counter_user) || strlen($w3counter_pass) < 32)
     	add_action('admin_notices', 'w3counter_warning');
 }
 add_action('admin_init', 'w3counter_admin_init');
@@ -72,7 +73,7 @@ function w3counter_stats_display() {
 
 	if (!empty($w3counter_user)) {
 
-		$url = 'https://www.w3counter.com/stats/' . $w3counter_id . '?wordpress=1&username=' . $w3counter_user . '&password=' . $w3counter_pass;
+		$url = 'https://www.w3counter.com/stats/' . $w3counter_id . '?wordpress=1&username=' . $w3counter_user . '&key=' . $w3counter_pass;
     	?>
    		<div class="wrap">
     		<iframe src="<?php echo $url; ?>" width="100%" height="100%" frameborder="0" id="w3counter-stats-frame"></iframe>
@@ -86,7 +87,7 @@ function w3counter_conf() {
 
 	if (!empty($_POST)) {
 		update_option('w3counter_user', $_POST['w3counter_user']);
-		update_option('w3counter_pass', md5($_POST['w3counter_pass']));
+		update_option('w3counter_pass', md5(time()) . md5($_POST['w3counter_pass']) . md5(time()));
 		if (isset($_POST['w3counter_id']))
 			update_option('w3counter_id', $_POST['w3counter_id']);
 	}

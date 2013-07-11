@@ -78,6 +78,7 @@ function w3counter_stats_display() {
    		<div class="wrap">
     		<iframe src="<?php echo $url; ?>" width="100%" height="100%" frameborder="0" id="w3counter-stats-frame"></iframe>
     	</div>
+		
     	<?php
 
 	}

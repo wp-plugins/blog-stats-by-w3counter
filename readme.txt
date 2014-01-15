@@ -2,10 +2,10 @@
 Contributors: dangrossman
 Tags: web stats, web analytics, statistics, stats, analytics, w3counter, tracker, counter
 Requires at least: 2.8
-Tested up to: 3.4.2
+Tested up to: 3.8
 Stable tag: trunk
 
-Adds real-time blog stats to your dashboard including visitor activity, top posts, top referrers, searches and locations of your visitors.
+Adds real-time web stats to your dashboard including visitor activity, top posts, top referrers, searches and locations of your visitors.
 
 == Description ==
 
@@ -20,4 +20,4 @@ Requires a free web stats account from <a href="http://www.w3counter.com">W3Coun
 
 == Screenshots ==
 
-1. Blog Stats by W3Counter
+1. Web Stats by W3Counter

@@ -5,7 +5,7 @@
 Plugin Name:  W3Counter Free Web Stats
 Plugin URI:   http://www.w3counter.com/resources/wordpress-plugin
 Description:  Adds real-time stats to your dashboard including visitor activity, top posts, top referrers, searches and locations of your visitors. To get started: 1) <a href="http://www.w3counter.com/signup">Sign up for a free W3Counter account</a>, 2) Go to your <a href="admin.php?page=w3counter-config">W3Counter settings</a> page to set your login details, and 3) Add the W3Counter Widget to one of your sidebars or manually copy and paste the code into your theme. <strong>Do you advertise your site online? Then check out our other service: <a href="http://www.improvely.com">Improvely</a></strong>
-Version:      2.9
+Version:      3.0
 Author:       W3Counter
 Author URI:   http://www.w3counter.com
 
@@ -16,6 +16,7 @@ function w3counter_init() {
     add_action('admin_menu', 'w3counter_stats_page');
 }
 add_action('init', 'w3counter_init');
+register_activation_hook(__FILE__, 'w3counter_activate');
 
 function w3counter_warning() {
 	echo "
@@ -30,9 +31,8 @@ function w3counter_admin_init() {
         $hook = 'dashboard_page_w3counter-stats-display';
     add_action('admin_head-'.$hook, 'w3counter_stats_script');
 
-    $w3counter_user = get_option('w3counter_user');
-	$w3counter_pass = get_option('w3counter_pass');
-    if (empty($w3counter_user) || strlen($w3counter_pass) < 32)
+    $w3counter_token = get_option('w3counter_token');
+    if (empty($w3counter_token))
     	add_action('admin_notices', 'w3counter_warning');
 }
 add_action('admin_init', 'w3counter_admin_init');
@@ -68,12 +68,11 @@ function w3counter_stats_script() { ?>
 function w3counter_stats_display() {
 	
 	$w3counter_id = get_option('w3counter_id');
-	$w3counter_user = get_option('w3counter_user');
-	$w3counter_pass = get_option('w3counter_pass');
+	$w3counter_token = get_option('w3counter_token');
 
-	if (!empty($w3counter_user)) {
+	if (!empty($w3counter_token)) {
 
-		$url = 'https://www.w3counter.com/stats/' . $w3counter_id . '?wordpress=1&username=' . $w3counter_user . '&key=' . $w3counter_pass;
+		$url = 'https://www.w3counter.com/stats/' . $w3counter_id . '?token=' . $w3counter_token;
     	?>
    		<div class="wrap">
     		<iframe src="<?php echo $url; ?>" width="100%" height="100%" frameborder="0" id="w3counter-stats-frame"></iframe>
@@ -84,30 +83,45 @@ function w3counter_stats_display() {
 	}
 }
 
+function w3counter_activate() {
+    $w3counter_pass = get_option('w3counter_pass');
+    if (!empty($w3counter_pass)) {
+        delete_option('w3counter_user');
+        delete_option('w3counter_pass');
+        delete_option('w3counter_sites');
+    }
+}
+
 function w3counter_conf() {
 
-	if (!empty($_POST)) {
-		update_option('w3counter_user', $_POST['w3counter_user']);
-		update_option('w3counter_pass', md5(time()) . md5($_POST['w3counter_pass']) . md5(time()));
-		if (isset($_POST['w3counter_id']))
-			update_option('w3counter_id', $_POST['w3counter_id']);
-	}
+    //for debugging
+    if (isset($_GET['clear'])) {
+        delete_option('w3counter_user');
+        delete_option('w3counter_pass');
+        delete_option('w3counter_id');
+        delete_option('w3counter_sites');
+        delete_option('w3counter_token');
+    }
 
-	$w3counter_id = get_option('w3counter_id');
-	$w3counter_user = get_option('w3counter_user');
-	$w3counter_pass = get_option('w3counter_pass');
-	$w3counter_sites = get_option('w3counter_sites');
+    if (!empty($_POST['w3counter_id']))
+        update_option('w3counter_id', $_POST['w3counter_id']);
+    $w3counter_id = get_option('w3counter_id');
 
-	if (empty($w3counter_sites) && empty($w3counter_id) && !empty($w3counter_user)) {
+	if (!empty($_POST['w3counter_user'])) {
 		$w3counter_sites = array();
-		$list = @file('https://www.w3counter.com/stats/wpinstall?username=' . urlencode($w3counter_user) . '&password=' . urlencode(md5($_POST['w3counter_pass'])));
+		$list = @file('https://www.w3counter.com/stats/wpinstall?v3=true&username=' . urlencode($_POST['w3counter_user']) . '&password=' . urlencode(md5($_POST['w3counter_pass'])));
 		if (!empty($list)) {
+            $i = 0;
 			foreach ($list as $line) {
-				$line = trim($line);
-				$parts = explode(',', $line);
-				$w3counter_sites[] = array('id' => $parts[0], 'url' => $parts[1]);
+                if ($i == 0) {
+                    update_option('w3counter_token', trim($line));
+                    $i++;
+                } else {
+				    $line = trim($line);
+				    $parts = explode(',', $line);
+				    $w3counter_sites[] = array('id' => $parts[0], 'url' => $parts[1]);
+                }
 			}
-			update_option('w3counter_sites', $w3counter_sites);
 			if (count($w3counter_sites) == 1) {
 				$w3counter_id = $w3counter_sites[0]['id'];
 				update_option('w3counter_id', $w3counter_id);
@@ -116,6 +130,8 @@ function w3counter_conf() {
 			$manual = true;
 		}
 	}
+
+    $w3counter_token = get_option('w3counter_token');
 
 ?>
 
@@ -126,45 +142,46 @@ function w3counter_conf() {
 
     <form method="post" action="admin.php?page=w3counter-config">
 
-	<?php if (!empty($_POST)): ?>
-		<div id="message" class="updated fade"><p><strong><?php _e('Your settings have been saved. Add the W3Counter Widget to one of your sidebars from the <b>Appearance</b> menu, then view your blog\'s stats from your <b>Dashboard</b> menu.') ?></strong></p></div>
-	<?php endif; ?>
+    <?php if (!empty($w3counter_token) && !empty($w3counter_id)): ?>
+        <div id="message" class="updated fade"><p><strong><?php _e('All set! Add the W3Counter Widget to one of your sidebars from the <b>Appearance</b> menu, then view your blog\'s stats from your <b>Dashboard</b> menu.') ?></strong></p></div>
+    <?php endif; ?>
 
 	<?php if (isset($manual)): ?>
 		<div id="message" class="updated fade"><p><strong>Error:</strong> We couldn't retrieve the websites from 
 			your account. You may have entered your username or password incorrectly, or your web host blocked the 
-			connection to W3Counter. You can finish setting up the plugin manually by entering your password again 
-			and the ID of your website below. The ID is the number you see in your browser address bar when viewing 
+			connection to W3Counter. You can finish setting up the plugin manually by entering the ID of your 
+            website below. The ID is the number you see in your browser address bar when viewing 
 			your stats on the W3Counter website (ex: http://www.w3counter.com/stats/123 <-- 123).
 		</p></div>
 	<?php endif; ?>
 
     <table class="form-table">
-        <tr valign="top">
-            <th scope="row"><label>Your W3Counter Username:</label></th>
-            <td>
-                <input type="text" name="w3counter_user" value="<?php echo $w3counter_user; ?>" />
-            </td>
-        </tr>
-		<tr>
-			<th scope="row"><label>Your W3Counter Password:</label></th>
-			<td>
-				<input type="password" name="w3counter_pass" value="" />
-            </td>
-	    </tr>
-	    <?php if (!empty($w3counter_sites)): ?>
-	    <tr>
-	    	<th scope="row"><label>Your Website:</label></th>
-	    	<td>
-	    		<select name="w3counter_id">
-	    		<?php foreach ($w3counter_sites as $site): ?>
-	    			<option value="<?php echo $site['id']; ?>"<?php if (!empty($w3counter_id) && $w3counter_id == $site['id']) echo ' selected="selected"'; ?>><?php echo str_replace('http://', '', $site['url']); ?></option>
-	    		<?php endforeach; ?>
-    			</select>
-			</td>
-		</tr>
-		<?php endif; ?>
-		<?php if (isset($manual)): ?>
+        <?php if (!isset($manual) && empty($w3counter_sites)): ?>
+            <tr valign="top">
+                <th scope="row"><label>Your W3Counter Username:</label></th>
+                <td>
+                    <input type="text" name="w3counter_user" value="<?php echo $w3counter_user; ?>" />
+                </td>
+            </tr>
+    		<tr>
+    			<th scope="row"><label>Your W3Counter Password:</label></th>
+    			<td>
+    				<input type="password" name="w3counter_pass" value="" />
+                </td>
+    	    </tr>
+        <?php endif; ?>
+        <?php if (!empty($w3counter_sites)): ?>
+    	    <tr>
+    	    	<th scope="row"><label>What website in W3Counter should this blog be linked to?</label></th>
+    	    	<td>
+    	    		<select name="w3counter_id">
+    	    		<?php foreach ($w3counter_sites as $site): ?>
+    	    			<option value="<?php echo $site['id']; ?>"<?php if (!empty($w3counter_id) && $w3counter_id == $site['id']) echo ' selected="selected"'; ?>><?php echo str_replace('http://', '', $site['url']); ?></option>
+    	    		<?php endforeach; ?>
+        			</select>
+    			</td>
+    		</tr>
+        <?php elseif ($manual): ?>
 		<tr>
 			<th scope="row"><label>Website ID:</label></th>
 			<td>

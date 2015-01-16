@@ -2,7 +2,7 @@
 Contributors: dangrossman
 Tags: web stats, web analytics, statistics, stats, analytics, w3counter, tracker, counter
 Requires at least: 2.8
-Tested up to: 4.0
+Tested up to: 4.1
 Stable tag: trunk
 
 Adds real-time web stats to your dashboard including visitor activity, top posts, top referrers, searches and locations of your visitors.
@@ -17,6 +17,8 @@ Requires a free web stats account from <a href="http://www.w3counter.com">W3Coun
 == Installation ==
 
 1. Enter your W3Counter username and password in the W3Counter page under Settings.
+
+2. Add the counter widget to your theme under the Appearance menu.
 
 == Screenshots ==
 

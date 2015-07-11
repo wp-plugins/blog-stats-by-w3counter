@@ -2,7 +2,7 @@
 Contributors: dangrossman
 Tags: web stats, web analytics, statistics, stats, analytics, w3counter, tracker, counter
 Requires at least: 2.8
-Tested up to: 4.1
+Tested up to: 4.2.2
 Stable tag: trunk
 
 Adds real-time web stats to your dashboard including visitor activity, top posts, top referrers, searches and locations of your visitors.

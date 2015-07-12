@@ -5,7 +5,7 @@
 Plugin Name:  W3Counter Free Web Stats
 Plugin URI:   http://www.w3counter.com/resources/wordpress-plugin
 Description:  Adds real-time stats to your dashboard including visitor activity, top posts, top referrers, searches and locations of your visitors. To get started: 1) <a href="http://www.w3counter.com/signup">Sign up for a free W3Counter account</a>, 2) Go to your <a href="admin.php?page=w3counter-config">W3Counter settings</a> page to set your login details, and 3) Add the W3Counter Widget to one of your sidebars or manually copy and paste the code into your theme. <strong>Do you advertise your site online? Then check out our other service: <a href="http://www.improvely.com">Improvely</a></strong>
-Version:      3.0
+Version:      3.1
 Author:       W3Counter
 Author URI:   http://www.w3counter.com
 

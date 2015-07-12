@@ -9,10 +9,9 @@ Adds real-time web stats to your dashboard including visitor activity, top posts
 
 == Description ==
 
-Adds W3Counter's free web stats to your WordPress dashboard, and adds a widget
-for automatically adding the tracking code to your sidebar. W3Counter is completely
-free for life, and offers dozens of reports about your website traffic, all updated
-in real-time.
+Adds W3Counter's free web stats to your WordPress dashboard, and installs the tracker
+on your site via a sidebar widget. W3Counter is completely free for life, and offers 
+dozens of reports about your website traffic, all updated in real-time.
 
 Requires a free web stats account from <a href="http://www.w3counter.com">W3Counter.com</a>.
 
